@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Telecom Support Chatbot</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1e1e1e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ddd;
+        }
+
+        #chatbox {
+            width: 100%;
+            max-width: 600px;
+            height: 90vh;
+            background: #2c2f33;
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #header {
+            background-color: #23272a;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        #messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            display: flex;
+            max-width: 80%;
+        }
+
+        .user {
+            align-self: flex-end;
+            justify-content: flex-end;
+        }
+
+        .bot {
+            align-self: flex-start;
+            justify-content: flex-start;
+        }
+
+        .text {
+            padding: 12px 16px;
+            border-radius: 15px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .user .text {
+            background-color: #6c5ce7;
+            color: #fff;
+            border-bottom-right-radius: 2px;
+        }
+
+        .bot .text {
+            background-color: #636e72;
+            color: #fff;
+            border-bottom-left-radius: 2px;
+        }
+
+        #inputArea {
+            display: flex;
+            padding: 10px;
+            background-color: #23272a;
+        }
+
+        #input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 20px;
+            border: 1px solid;
+            background-color: #40444b;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        #sendBtn {
+            background-color: #7289da;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin-left: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        #sendBtn:hover {
+            background-color: #5b6eae;
+        }
+
+        .welcome {
+            text-align: center;
+            margin-top: 280px;
+        }
+
+        .prompt {
+            display: inline-block;
+            background-color: #ede7f6;
+            color: #0daaaf;
+            padding: 8px 12px;
+            border-radius: 15px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .prompt:hover {
+            background-color: #d1c4e9;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chatbox">
+        <div id="header">Telecom Infrastructure Chatbot</div>
+        <div id="messages">
+            <div class="welcome">
+                <p><strong>Welcome! 👋</strong><br>How can I assist you with your network or hardware issue today?</p>
+                <div class="prompt" onclick="quickSend('My router is not working')">My router is not working</div>
+                <div class="prompt" onclick="quickSend('Internet speed is slow')">Internet speed is slow</div>
+                <div class="prompt" onclick="quickSend('Warranty for fiber modem')">Warranty for fiber modem</div>
+            </div>
+        </div>
+        <div id="inputArea">
+            <input id="input" type="text" placeholder="Type a message..."
+                onkeydown="if(event.key==='Enter'){sendMessage()}" />
+            <button id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let isFirstMessage = true;
+
+        async function sendMessage() {
+            const input = document.getElementById("input");
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Remove welcome screen on first message
+            if (isFirstMessage) {
+                document.querySelector(".welcome")?.remove();
+                isFirstMessage = false;
+            }
+
+            // Show user message
+            const userDiv = document.createElement("div");
+            userDiv.classList.add("message", "user");
+            userDiv.innerHTML = `<div class="text">${message}</div>`;
+            document.getElementById("messages").appendChild(userDiv);
+            input.value = "";
+            document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+
+            // Send to Flask backend
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await response.json();
+
+            // Show bot's message
+            const botDiv = document.createElement("div");
+            botDiv.classList.add("message", "bot");
+            botDiv.innerHTML = `<div class="text">${data.response}</div>`;
+            document.getElementById("messages").appendChild(botDiv);
+            document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+        }
+
+        function quickSend(text) {
+            document.getElementById("input").value = text;
+            sendMessage();
+        }
+    </script>
+</body>
+
+</html>
