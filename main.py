@@ -2,7 +2,10 @@ from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import requests
 from io import StringIO
+from dotenv import load_dotenv
+import os
 
+load_dotenv()  # take environment variables from .env.
 app = Flask(__name__)
 
 # =================== HARDWARE PRODUCT DATA ===================
@@ -37,9 +40,9 @@ hardware_context = "\n".join([
 ])
 
 # =================== GPT FUNCTION ===================
-OPENROUTER_API_KEY = "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"  # Replace with your real key
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+# OPENROUTER_API_KEY = "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"
 BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
-
 def generate_response(user_query):
     context = f"""
 You are a friendly and helpful telecom infrastructure customer support chatbot. Keep your replies short, clear, and easy to understand. Avoid technical jargon unless necessary:
