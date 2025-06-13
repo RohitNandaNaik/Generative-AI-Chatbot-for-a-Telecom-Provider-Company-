@@ -1,3 +1,7 @@
+# You are a friendly and helpful telecom infrastructure customer support chatbot. Keep your replies short, clear, and easy to understand. Avoid technical jargon unless necessary:
+
+
+
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import requests
@@ -5,7 +9,7 @@ from io import StringIO
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # take environment variables from .env.
+load_dotenv()
 app = Flask(__name__)
 
 # =================== HARDWARE PRODUCT DATA ===================
@@ -21,7 +25,6 @@ infra_faq_data = '''question,answer
 "My internet connection is slow.","Try rebooting your router. If the issue persists, check for interference or call support."
 "How do I install a Wi-Fi extender?","Plug it in near your router, connect using WPS or app, and move it to desired location."
 "What's the warranty period?","Our hardware comes with 1 to 3 years warranty depending on the product."
-"How to contact support?","You can call 1800-555-1234 or email support@commscope.com."
 "How to check if my fiber modem is working?","Check the power LED and fiber signal light. Refer to the manual or call support."
 "My router is overheating.","Ensure it's in a ventilated space. Unplug for 10 mins and restart."
 '''
@@ -39,25 +42,34 @@ hardware_context = "\n".join([
     for _, row in hardware_df.iterrows()
 ])
 
+# =================== GLOBAL MEMORY & FEEDBACK ===================
+session_memory = {}  # Holds history for dialogue management
+feedback_log = []    # Stores feedback entries
+
 # =================== GPT FUNCTION ===================
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-# OPENROUTER_API_KEY = "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"
 BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
-def generate_response(user_query):
+
+def generate_response(user_query, session_id="default"):
+    memory = session_memory.get(session_id, [])
+
+    # Build context prompt
     context = f"""
 You are a friendly and helpful telecom infrastructure customer support chatbot. Keep your replies short, clear, and easy to understand. Avoid technical jargon unless necessary:
 
 
-=== Hardware Products ==
-
+=== Hardware Products ===
 {hardware_context}
 
 === FAQs ===
 {str(faq_dict)}
 
+Recent Conversation:
+{format_chat_memory(memory)}
+
 User: {user_query}
-Assistant:
-"""
+Assistant:"""
+
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json"
@@ -65,16 +77,25 @@ Assistant:
     payload = {
         "model": "openai/gpt-3.5-turbo",
         "messages": [
-            {"role": "system", "content": "You are a helpful customer support assistant for telecom hardware and networking issues."},
+            {"role": "system", "content": "You assist telecom customers with simple, helpful answers using the product and FAQ context provided."},
             {"role": "user", "content": context}
         ]
     }
+
     try:
         response = requests.post(BASE_URL, headers=headers, json=payload)
         response.raise_for_status()
-        return response.json()['choices'][0]['message']['content']
+        answer = response.json()['choices'][0]['message']['content']
+        
+        # Update memory
+        memory.append({"user": user_query, "bot": answer})
+        session_memory[session_id] = memory[-5:]  # Keep only last 5 exchanges
+        return answer
     except Exception as e:
         return f"Sorry, an error occurred: {e}"
+
+def format_chat_memory(memory):
+    return "\n".join([f"User: {m['user']}\nAssistant: {m['bot']}" for m in memory])
 
 # =================== ROUTES ===================
 @app.route("/")
@@ -84,9 +105,21 @@ def index():
 @app.route("/chat", methods=["POST"])
 def chat():
     user_message = request.json.get("message")
-    bot_reply = generate_response(user_message)
+    session_id = request.json.get("session_id", "default")
+    bot_reply = generate_response(user_message, session_id)
     return jsonify({"response": bot_reply})
 
+@app.route("/feedback", methods=["POST"])
+def feedback():
+    data = request.json
+    feedback_log.append({
+        "message": data.get("message"),
+        "response": data.get("response"),
+        "thumbs": data.get("thumbs"),
+        "comment": data.get("comment")
+    })
+    return jsonify({"status": "feedback received"})
+
 # =================== RUN ===================
-if __name__ == "__main__":  # ✅ FIXED: should be __main__ not _main_
+if __name__ == "__main__":
     app.run(debug=True)
