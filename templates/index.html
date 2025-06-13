@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <title>Telecom Support Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
             margin: 0;
@@ -12,38 +13,50 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #1e1e1e;
+            background: linear-gradient(135deg, #d0f0ff 0%, #f0fbff 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #ddd;
         }
 
         #chatbox {
             width: 100%;
             max-width: 600px;
-            height: 90vh;
-            background: #2c2f33;
+            height: 800px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(12px);
             display: flex;
             flex-direction: column;
-            border-radius: 12px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         #header {
-            background-color: #23272a;
-            color: #fff;
+            background: rgba(173, 216, 230, 0.7);
+            color: #003366;
             padding: 15px;
             text-align: center;
-            font-size: 18px;
+            font-size: 20px;
+            border-bottom: 1px solid #b0e0e6;
+            position: relative;
+            font-weight: bold;
+        }
+
+        #header .actions {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            display: flex;
+            gap: 12px;
+            cursor: pointer;
         }
 
         #messages {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .message {
@@ -67,105 +80,97 @@
             width: 24px;
             height: 24px;
             margin: 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0077b6;
         }
 
         .text {
-            padding: 12px 16px;
-            border-radius: 15px;
+            padding: 10px 14px;
+            border-radius: 18px;
             font-size: 14px;
             line-height: 1.4;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            word-wrap: break-word;
         }
 
         .user .text {
-            background-color: #6c5ce7;
-            color: #fff;
-            border-bottom-right-radius: 2px;
+            background: linear-gradient(135deg, #90e0ef, #48cae4);
+            color: #003366;
+            border-bottom-right-radius: 4px;
         }
 
         .bot .text {
-            background-color: #636e72;
-            color: #fff;
-            border-bottom-left-radius: 2px;
+            background-color: #e0f7fa;
+            color: #003366;
+            border-bottom-left-radius: 4px;
+        }
+
+        .text:hover {
+            transform: scale(1.02);
+            transition: transform 0.2s ease;
         }
 
         #inputArea {
             display: flex;
             padding: 10px;
-            background-color: #23272a;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid #b0e0e6;
         }
 
         #input {
             flex: 1;
             padding: 12px;
             border-radius: 20px;
-            border: 1px solid;
-            background-color: #40444b;
-            color: #fff;
+            border: 1px solid #b0e0e6;
+            background: #f0fbff;
             font-size: 14px;
             outline: none;
+            color: #003366;
         }
 
         #sendBtn {
-            background-color: #7289da;
+            background: linear-gradient(135deg, #48cae4, #00b4d8);
             color: white;
             border: none;
-            padding: 12px 16px;
+            padding: 10px 16px;
             margin-left: 10px;
-            border-radius: 15%;
+            border-radius: 50%;
             cursor: pointer;
             font-size: 16px;
         }
 
         #sendBtn:hover {
-            background-color: #5b6eae;
-        }
-
-        .welcome {
-            text-align: center;
-            margin-top: 280px;
+            background: linear-gradient(135deg, #00b4d8, #0077b6);
         }
 
         .prompt {
             display: inline-block;
-            background-color: #ede7f6;
-            color: #0d0f0f;
+            background: rgba(255, 255, 255, 0.6);
+            color: #003366;
             padding: 8px 12px;
-            border-radius: 15px;
-            margin: 5px;
+            border: 1px solid #b0e0e6;
+            border-radius: 20px;
+            margin: 4px 2px;
             cursor: pointer;
             font-size: 13px;
         }
 
         .prompt:hover {
-            background-color: #d1c4e9;
+            background: #e0f7fa;
         }
 
-        .avatar {
-            font-size: 20px;
-            margin-top: 2px;
-        }
-
-        .typing {
-            display: inline-block;
-            margin-left: 5px;
-        }
-
-        .dot {
+        .typing .dot {
             height: 6px;
             width: 6px;
             margin: 0 2px;
-            background-color: white;
+            background-color: #0077b6;
             border-radius: 50%;
             display: inline-block;
             animation: blink 1.4s infinite both;
-        }
-
-        .dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .dot:nth-child(3) {
-            animation-delay: 0.4s;
         }
 
         @keyframes blink {
@@ -180,29 +185,90 @@
                 opacity: 1;
             }
         }
+
+        /* History Sidebar */
+        #historySidebar {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 300px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 999;
+            padding: 20px;
+        }
+
+        #historySidebar.open {
+            right: 0;
+        }
+
+        #closeSidebar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #0077b6;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        .historyItem {
+            padding: 10px;
+            margin: 5px 0;
+            border-bottom: 1px solid #b0e0e6;
+            font-size: 14px;
+            cursor: pointer;
+            background: rgba(224, 247, 250, 0.5);
+            border-radius: 8px;
+            color: #003366;
+        }
+
+        .historyItem:hover {
+            background-color: #d0f0ff;
+        }
     </style>
 </head>
 
 <body>
     <div id="chatbox">
-        <div id="header">Telecom Infrastructure Chatbot</div>
+        <div id="header">
+            Telecom Infrastructure Chatbot
+            <div class="actions">
+                <span onclick="resetChat()"><i class="fas fa-sync-alt"></i></span>
+                <span onclick="showHistory()"><i class="fas fa-history"></i></span>
+            </div>
+        </div>
         <div id="messages">
             <div class="welcome">
-                <p><strong>Welcome! 👋</strong><br>How can I assist you with your network or hardware issue today?</p>
-                <div class="prompt" onclick="quickSend('My router is not working')">My router is not working</div>
-                <div class="prompt" onclick="quickSend('Internet speed is slow')">Internet speed is slow</div>
-                <div class="prompt" onclick="quickSend('Warranty for fiber modem')">Warranty for fiber modem</div>
+                <p><strong>Welcome! 👋</strong><br>How can I assist you today?</p>
+                <div class="prompt" onclick="quickSend('Router not working')">Router not working</div>
+                <div class="prompt" onclick="quickSend('Internet slow')">Internet slow</div>
+                <div class="prompt" onclick="quickSend('Modem warranty')">Modem warranty</div>
             </div>
         </div>
         <div id="inputArea">
             <input id="input" type="text" placeholder="Type a message..."
                 onkeydown="if(event.key==='Enter'){sendMessage()}" />
-            <button id="sendBtn" onclick="sendMessage()">Send</button>
+            <button id="sendBtn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
+    </div>
+
+    <!-- History Sidebar -->
+    <div id="historySidebar">
+        <button id="closeSidebar" onclick="toggleHistory()">X</button>
+        <h3>Chat History</h3>
+        <div id="historyList"></div>
     </div>
 
     <script>
         let isFirstMessage = true;
+        let chatHistory = [];
 
         async function sendMessage() {
             const input = document.getElementById("input");
@@ -214,48 +280,42 @@
                 isFirstMessage = false;
             }
 
-            // Show user message with icon
             const userDiv = document.createElement("div");
             userDiv.classList.add("message", "user");
             userDiv.innerHTML = `
-        <div class="avatar">🧑‍💻</div>
-        <div class="text">${message}</div>`;
+                <div class="icon"><i class="fas fa-user"></i></div>
+                <div class="text">${message}</div>`;
             document.getElementById("messages").appendChild(userDiv);
             input.value = "";
             scrollToBottom();
 
-            // Show typing dots
             const typingDiv = document.createElement("div");
             typingDiv.classList.add("message", "bot");
             typingDiv.id = "typing";
             typingDiv.innerHTML = `
-      <div class="avatar">🤖</div>
-        <div class="text typing">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </div>`;
+                <div class="icon"><i class="fas fa-robot"></i></div>
+                <div class="text typing">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>`;
             document.getElementById("messages").appendChild(typingDiv);
             scrollToBottom();
 
-            // Send to backend
             const response = await fetch("/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message })
             });
-
             const data = await response.json();
 
-            // Remove typing dots
             document.getElementById("typing").remove();
 
-            // Show bot reply with icon
             const botDiv = document.createElement("div");
             botDiv.classList.add("message", "bot");
             botDiv.innerHTML = `
-        <div class="avatar">🤖</div>
-        <div class="text">${data.response}</div>`;
+                <div class="icon"><i class="fas fa-robot"></i></div>
+                <div class="text">${data.response}</div>`;
             document.getElementById("messages").appendChild(botDiv);
             scrollToBottom();
         }
@@ -268,6 +328,45 @@
         function scrollToBottom() {
             const messages = document.getElementById("messages");
             messages.scrollTop = messages.scrollHeight;
+        }
+
+        function resetChat() {
+            const messagesDiv = document.getElementById("messages");
+
+            const currentChat = Array.from(messagesDiv.querySelectorAll(".message"))
+                .map(msg => msg.textContent);
+            if (currentChat.length > 0) chatHistory.push(currentChat);
+
+            messagesDiv.innerHTML = `
+                <div class="welcome">
+                    <p><strong>Welcome! 👋</strong><br>How can I assist you today?</p>
+                    <div class="prompt" onclick="quickSend('Router not working')">Router not working</div>
+                    <div class="prompt" onclick="quickSend('Internet slow')">Internet slow</div>
+                    <div class="prompt" onclick="quickSend('Modem warranty')">Modem warranty</div>
+                </div>
+            `;
+            isFirstMessage = true;
+        }
+
+        function toggleHistory() {
+            const sidebar = document.getElementById("historySidebar");
+            sidebar.classList.toggle("open");
+        }
+
+        function showHistory() {
+            const historyList = document.getElementById("historyList");
+            historyList.innerHTML = "";
+            if (chatHistory.length === 0) {
+                historyList.innerHTML = "<p>No previous chats available.</p>";
+            } else {
+                chatHistory.forEach((chat, index) => {
+                    const chatBlock = document.createElement("div");
+                    chatBlock.classList.add("historyItem");
+                    chatBlock.innerHTML = `<strong>Chat ${index + 1}:</strong><br>${chat.join('<br>')}`;
+                    historyList.appendChild(chatBlock);
+                });
+            }
+            toggleHistory();
         }
     </script>
 </body>
