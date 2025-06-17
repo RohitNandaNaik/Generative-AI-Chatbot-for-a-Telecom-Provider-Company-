@@ -13,22 +13,36 @@ load_dotenv()
 app = Flask(__name__)
 
 
-# =================== Read DATA ===================
-# hardware_data = pd.read_excel("data/Hardware_Product_Data.xlsx")
-# infra_faq_data = pd.read_excel("data/Infra_FAQ_Data.xlsx")
-
 # =================== LOAD DATA ===================
 def load_data():
-   hardware_df = pd.read_excel("data/Hardware_Product_Data.xlsx")
-   faq_df = pd.read_excel("data/Infra_FAQ_Data.xlsx")  # adjust path if needed
-   return hardware_df, faq_df
+    hardware_df = pd.read_excel("data/Hardware_Product_Data.xlsx")
+    infra_faq_df = pd.read_excel("data/Infra_FAQ_Data.xlsx")
+    maintenance_df = pd.read_excel("data/Installation_Maintenance_Data.xlsx")
+    billing_faq_df = pd.read_excel("data/Billing_Payments_FAQ_Data.xlsx")
+    
+    return hardware_df, infra_faq_df, maintenance_df, billing_faq_df
 
-hardware_df, faq_df = load_data()
-faq_dict = dict(zip(faq_df['Question'], faq_df['Answer']))
+# Load all data
+hardware_df, infra_faq_df, maintenance_df, billing_faq_df = load_data()
+
+# Prepare contexts
+faq_dict = dict(zip(infra_faq_df['Question'], infra_faq_df['Answer']))
+
 hardware_context = "\n".join([
     f"Product: {row['Name']} | Type: {row['Type']} | Model: {row['Model']} | Support: {row['SupportContact']} | Warranty: {row['Warranty']}"
     for _, row in hardware_df.iterrows()
 ])
+
+maintenance_context = "\n".join([
+    f"Task: {row['Task Name']} | Estimated Time: {row['Estimated Time']} | Technicians: {row['Technician Required']} | Support: {row['SupportContact']}"
+    for _, row in maintenance_df.iterrows()
+])
+
+billing_faq_context = "\n".join([
+    f"Q: {row['Question']} \nA: {row['Answer']}"
+    for _, row in billing_faq_df.iterrows()
+])
+
 
 # =================== GLOBAL MEMORY & FEEDBACK ===================
 session_memory = {}  # Holds history for dialogue management
@@ -51,6 +65,12 @@ You are a friendly and helpful telecom infrastructure customer support chatbot. 
 
 === FAQs ===
 {str(faq_dict)}
+
+=== Installation & Maintenance ===
+{maintenance_context}
+
+=== Billing & Payments FAQs ===
+{billing_faq_context}
 
 Recent Conversation:
 {format_chat_memory(memory)}
