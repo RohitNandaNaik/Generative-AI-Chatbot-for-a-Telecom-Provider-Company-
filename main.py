@@ -12,6 +12,7 @@ import os
 load_dotenv()
 app = Flask(__name__)
 
+
 # =================== Read DATA ===================
 hardware_data = pd.read_excel("data/Hardware_Product_Data.xlsx")
 infra_faq_data = pd.read_excel("data/Infra_FAQ_Data.xlsx")
