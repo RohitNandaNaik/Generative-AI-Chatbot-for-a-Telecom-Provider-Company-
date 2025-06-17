@@ -12,22 +12,9 @@ import os
 load_dotenv()
 app = Flask(__name__)
 
-# =================== HARDWARE PRODUCT DATA ===================
-hardware_data = """ProductID,Name,Type,Model,SupportContact,Warranty
-H101,Home Wi-Fi Router,Router,RTR-AX3000,1800-555-1234,2 Years
-H102,Gigabit Switch,Switch,GSW-800,1800-555-1235,3 Years
-H103,Fiber Optic Modem,Modem,FOM-100,1800-555-1236,1 Year
-H104,Wi-Fi Range Extender,Extender,EXT-500,1800-555-1237,2 Years
-H105,Structured Cabling Kit,Cabling,SCK-100,1800-555-1238,Lifetime
-"""
-
-infra_faq_data = '''question,answer
-"My internet connection is slow.","Try rebooting your router. If the issue persists, check for interference or call support."
-"How do I install a Wi-Fi extender?","Plug it in near your router, connect using WPS or app, and move it to desired location."
-"What's the warranty period?","Our hardware comes with 1 to 3 years warranty depending on the product."
-"How to check if my fiber modem is working?","Check the power LED and fiber signal light. Refer to the manual or call support."
-"My router is overheating.","Ensure it's in a ventilated space. Unplug for 10 mins and restart."
-'''
+# =================== Read DATA ===================
+hardware_data = pd.read_excel("data/Hardware_Product_Data.xlsx")
+infra_faq_data = pd.read_excel("data/Infra_FAQ_Data.xlsx")
 
 # =================== LOAD DATA ===================
 def load_data():
