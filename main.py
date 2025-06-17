@@ -12,19 +12,19 @@ import os
 load_dotenv()
 app = Flask(__name__)
 
-#test 
+
 # =================== Read DATA ===================
-hardware_data = pd.read_excel("data/Hardware_Product_Data.xlsx")
-infra_faq_data = pd.read_excel("data/Infra_FAQ_Data.xlsx")
+# hardware_data = pd.read_excel("data/Hardware_Product_Data.xlsx")
+# infra_faq_data = pd.read_excel("data/Infra_FAQ_Data.xlsx")
 
 # =================== LOAD DATA ===================
 def load_data():
-    hardware_df = pd.read_csv(StringIO(hardware_data))
-    faq_df = pd.read_csv(StringIO(infra_faq_data))
-    return hardware_df, faq_df
+   hardware_df = pd.read_excel("data/Hardware_Product_Data.xlsx")
+   faq_df = pd.read_excel("data/Infra_FAQ_Data.xlsx")  # adjust path if needed
+   return hardware_df, faq_df
 
 hardware_df, faq_df = load_data()
-faq_dict = dict(zip(faq_df['question'], faq_df['answer']))
+faq_dict = dict(zip(faq_df['Question'], faq_df['Answer']))
 hardware_context = "\n".join([
     f"Product: {row['Name']} | Type: {row['Type']} | Model: {row['Model']} | Support: {row['SupportContact']} | Warranty: {row['Warranty']}"
     for _, row in hardware_df.iterrows()
